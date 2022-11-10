@@ -60,7 +60,7 @@ public class GameField extends JPanel {
         }
 
         // проинициализируем таймер чем больше число тем медленнее двигается змейка
-        timer = new Timer(150,);
+        timer = new Timer(150,this);
         timer.start(); // запускаем таймер на выполнение чтобы он все обнулял
         createApple(); // создаем яблоко
     }
@@ -73,4 +73,24 @@ public class GameField extends JPanel {
         }
     }
 
+    // создадим метод , который будет отрисовывать все наши компоненты ябочки и змейки, для этого переопределим метод из класса  JPanel:
+    @Override
+    protected void paintComponent(Graphics g){
+        super.paintComponent(g);
+
+        if (inGame){ // будем проверять, чтобы змейка была в игре, если переменная inGame возвращает true, то мы будем рисовать, иначе рисуем Game Over
+
+            g.drawImage(apple, appleX, appleY, this); //мы обращаемся к элементу Graphics это какая-то графика в нашем случае это обычные картинки яблочко
+            // и его координаты appleX, appleY  и потом передаем this
+
+            for (int i = 0; i < dots ; i++) { // запускаем цикл для отрисовки нашей змейки
+                g.drawImage(dot,x[i], y[i], this);
+            }
+        }else { // если переменная inGame возвращает false рисуем Game Over
+            String str = "Game Over";
+            g.setColor(Color.GREEN);
+            g.drawString(str, SIZE/6,SIZE/2); // делаем так, чтобы надпись находилась посередине
+        }
+
+    }
 }
