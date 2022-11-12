@@ -2,159 +2,164 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.util.Random;
 
 /**
- * здесь вся логика игры, GameField это основной наш класс
+ * @SSobolewski
  */
 
-public class GameField extends JPanel implements ActionListener { // GameField будет наследоваться от JPanel - это основная панель, где будет происходить действие игры
-
-    // 1b. Объявим наши поля:
-    private final int SIZE = 320; // константа размерность нашего поля игры
-    private final int DOT_SIZE = 16; // константа размерность нашей ячейки змейки и соответственно яблочка 16х16
-    private final int ALL_DOTS = 400; // в размерности поля 320 поместится 20 шт. ячеек по 16 в длинну и 16 в ширину, т.е. всего 400
-    // максимальное количество звеньев цепочки элементов (указываем ниже в массиве координат)
-
-    // 2. Объявим картинки:
-    private Image dot; // поле под игровую ячейку
-    private Image apple;
-
-    // 3. Объявим координаты X и Y яблока:
-    private int appleX; // х - позиция
-    private int appleY;  // y - позиция
-
-    // 4. Объявляем два массива для хранения координат змейки X и Y с размерностью массива ALL_DOTS,
-    // т.к. 400 точек, то будет 400 Х-координат:
-    private int[] x = new int[ALL_DOTS]; //массив для Х-координат, длинна максимальная
-    private int[] y = new int[ALL_DOTS]; //массив для Y-координат, длинна максимальная
-
-    // 5. Размер змейки, количество звеньев змейки, в данный момент времени:
-    private int dots;
-
-    // 6. Создаем стандартный swing-овый таймер - Timer - это класс, который считает время, он будет считать количество кадров в секунду,
-    // т.е. чем больше кадров у нас обновляется каждую секунду, тем быстрее движется наша змейка:
-    private Timer timer;
-
-    // 7. Создаем пять буленовских полей, которые будут отвечать за текущее направление движения змейки:
+public class GameField extends JPanel implements ActionListener{
+    private final int SIZE = 320;
+    private final int DOT_SIZE = 16;
+    private final int ALL_DOTS = 400;
+    private Image point;
+    private Image fire;
+    private int fireX;
+    private int fireY;
+    private int[] x = new int[ALL_DOTS];
+    private int[] y = new int[ALL_DOTS];
+    private int points;
     private boolean left = false;
     private boolean right = true;
     private boolean up = false;
     private boolean down = false;
-    private boolean inGame = true; // задаем булевскую переменную, когда будет равна false, то мы выходим из программы
+    private boolean play = true;
 
 
-    // 1a. создадим конструктор:
-    public GameField() {
+
+    public GameField(){
         setBackground(Color.BLACK);
-        loadImage(); // 8. добавляем метод в конструктор
+        loadImg();
         initGame();
-        //addKeyListener(new FieldKeyListener());
-        //setFocusable(true);
+        addKeyListener(new FieldKeyListener());
+        setFocusable(true);
 
     }
 
-    // 8. создадим метод loadImage() для загрузки картинок в переменные dot и apple:
-    private void loadImage() {
-
-        ImageIcon iid = new ImageIcon("dot.png");
-        dot = iid.getImage();
-
-        ImageIcon iia = new ImageIcon("apple.png");
-        apple = iia.getImage();
-    }
-
-    // 9. создадим метод для инициализации начала игры:
-    public void initGame() {
-        dots = 3; // инициализируем начальное количество ячеек
-        for (int i = 0; i < dots; i++) {
-            x[i] = 48 - i * DOT_SIZE; // x - позиция будет на числе 48, оно кратно 3х16, т.е. первое звено 48 остальные сдвигаются вправо
-            y[i] = 48; // всегда равна 48, т.е. плашмя положится вдоль оси Х
+    public void initGame(){
+        points = 2;
+        for (int i = 0; i < points; i++) {
+            x[i] = 48 - i*DOT_SIZE;
+            y[i] = 48;
         }
-        // 10. Создаем таймер:
-        // проинициализируем таймер 250 чем больше число тем медленнее двигается змейка
-        timer = new Timer(250, this); // this указывает что этот класс GameField будет отвечать за обработку вызова таймера
-        timer.start(); // запускаем таймер на выполнение, чтобы он все обнулял
-
-        // 11. Вызываем метод для создания яблока
-        createApple(); // создаем яблоко
+        Timer timer = new Timer(230, this);
+        timer.start();
+        createFire();
     }
 
-    // 11. Создаем метод для создания яблока:
-    private void createApple() {
-        // импортируем класс рандом 20 шестнадцати пиксельных квадратиков может уместится на игровое поле и по Х и по Y (от 0 до 19)
-        appleX = new Random().nextInt(20) * DOT_SIZE;  // умножаем на размерность поля DOT_SIZE
-        appleY = new Random().nextInt(20) * DOT_SIZE;  // тоже самое по Y
+    public void createFire(){
+        fireX = new Random().nextInt(20)*DOT_SIZE;
+        fireY = new Random().nextInt(20)*DOT_SIZE;
     }
 
-    // 14. Переопределяем метод paintCompanent() который отрисовывает все наше игровое поле
+    public void loadImg(){
+        ImageIcon iifire = new ImageIcon("snake.png");
+        fire = iifire.getImage();
+        ImageIcon iipoint = new ImageIcon("fire.png");
+        point = iipoint.getImage();
+    }
+
     @Override
-    protected void printComponent(Graphics g) {
-        super.printComponent(g); //тут происходит перерисовка всего компонента, нам нужно перисовать то что касается игры
-        if (inGame) { // если игра продолжается
-            g.drawImage(apple, appleX, appleY, this); // сначала рисуем яблоко, где this - указывает, кто перерисовывает, кто отвечает за картинку
-            // далее перерисовываем всю змейку, сколько точек-звеньев у змейки столько и перерисовываем:
-            for (int i = 0; i < dots ; i++) {
-                g.drawImage(dot,x[i],y[i],this); //рисуем точку-звено
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        if(play){
+            g.drawImage(fire,fireX,fireY,this);
+            for (int i = 0; i < points; i++) {
+                g.drawImage(point,x[i],y[i],this);
+            }
+        } else{
+            String str = "GAME OVER";
+            //Font f = new Font("Arial",14,Font.BOLD);
+            g.setColor(Color.ORANGE);
+            // g.setFont(f);
+            g.drawString(str,170,SIZE/2);
+        }
+    }
+
+    public void moveXY(){
+        for (int i = points; i > 0; i--) {
+            x[i] = x[i-1];
+            y[i] = y[i-1];
+        }
+        if(left){
+            x[0] -= DOT_SIZE;
+        }
+        if(right){
+            x[0] += DOT_SIZE;
+        } if(up){
+            y[0] -= DOT_SIZE;
+        } if(down){
+            y[0] += DOT_SIZE;
+        }
+    }
+
+    public void checkFire(){
+        if(x[0] == fireX && y[0] == fireY){
+            points++;
+            createFire();
+        }
+    }
+
+    public void checkCollisions(){
+        for (int i = points; i >0 ; i--) {
+            if(i>4 && x[0] == x[i] && y[0] == y[i]){
+                play = false;
+            }
+        }
+
+        if(x[0]>SIZE){
+            x[0] = 0;
+        }
+        if(x[0]<0){
+            x[0] = SIZE;
+        }
+        if(y[0]>SIZE){
+            play = false;
+        }
+        if(y[0]<0){
+            play = false;
+        }
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        if(play){
+            checkFire();
+            checkCollisions();
+            moveXY();
+
+        }
+        repaint();
+    }
+
+    class FieldKeyListener extends KeyAdapter{
+        @Override
+        public void keyPressed(KeyEvent e) {
+            super.keyPressed(e);
+            int key = e.getKeyCode();
+            if(key == KeyEvent.VK_LEFT && !right){
+                left = true;
+                up = false;
+                down = false;
+            }
+            if(key == KeyEvent.VK_RIGHT && !left){
+                right = true;
+                up = false;
+                down = false;
+            }
+
+            if(key == KeyEvent.VK_UP && !down){
+                right = false;
+                up = true;
+                left = false;
+            }
+            if(key == KeyEvent.VK_DOWN && !up){
+                right = false;
+                down = true;
+                left = false;
             }
         }
     }
-
-    // 13. Создадим передвигающий метод d в котором происходит логическая перерисовка точек, они будут сдвигаться в массивах которые мы задали
-    public void moveXY() {
-        for (int i = dots; i > 0; i--) {
-            x[i] = x[i - 1]; //сдвигаем точки 2 позиция будет третьей, третья - четвертой и тд
-            y[i] = y[i - 1]; // т.е. все точки которые не голова мы переместили на предыдущие позиции
-        }
-        // для головы мы переместим туда куда указывает напрвление:
-        if (left) {
-            x[0] -= DOT_SIZE; //влево х уменьшается -
-        }
-        if (right) {
-            x[0] += DOT_SIZE; //вправо х увеличивается +
-        }
-        if (up) {
-            y[0] -= DOT_SIZE; //вверх y уменьшается -
-        }
-        if (down) {
-            y[0] += DOT_SIZE; //вниз y увеличивается +
-        }
-    }
-
-    public void checkApple(){
-        if(x[0] == appleX && y[0] == appleY){
-            dots++;
-            createApple();
-        }
-    }
-
-    public void checkCollision(){
-        for (int i = 0; i < ; i++) {
-            
-        }
-    }
-    
-    // 12.  имплеементируем "implements ActionListener" в class GameField
-    // создастся метод actionPerformed - этот метод будет вызываться когда будет тикать таймер каждые 250 милесекунд
-    @Override
-    public void actionPerformed(ActionEvent e){
-            //если в игре, то будем проверять на столкновение с рамками игрового поля,
-            // проверка не встретилось ли яблоко, тогда нужно увеличить змейку и сгенерировать новое яблоко
-            // а также двигать змейку в направлении которое задавали при помощи четырех буленовских полей
-            // в любом случае встретил или не встретил надо перерисовывать поле перерисовка, также необходима – вам необходимо иметь возможность
-            // вручную указывать системе, что пора заново нарисовать тот или иной фрагмент вашего экрана. Этого требует анимация или любые
-            // динамические изменения в интерфейсе, не ждать же, в самом деле, пока операционная система соизволит перерисовать ваше окно.
-            // Перерисовку позволяет вызвать еще один доступный всем компонентам AWT метод repaint().
-
-        if (inGame) {
-           checkApple();
-           checkCollision();
-           moveXY();
-        }
-        repaint();  // перерисовываем поле, repaint() это метод который вызывает paintComponent(), как часть программы в графических компонентах AWT,
-            // которая вызывается системой для перерисовки компонента, является метод repaint() он вызывает paintComponent() - они работают в связке,
-            // а этот paintComponent() уже является стандартным методом отрисовки всех компонентов в swing
-
-    }
-
 }

@@ -1,35 +1,21 @@
 import javax.swing.*;
-import java.awt.*;
 
 /**
- * Начинаем работу над нашим первым проектом. Не будем ограничиваться консолью, поэтому нам понадобиться окно,
- * в котором и будут происходить все действия. Будем использовать swing.
+ * @SSobolewski
  */
 public class MainWindow extends JFrame {
-    // класс MainWindow это наше основное игровое окно,
-    // JFrame - это основной класс swing-овый, от которого наследуется каждый класс, который хочет быть окном
-    // Соответственно все его особенности и параметры пропишем в конструкторе
 
-    public MainWindow(){ // создаем конструктор нашего класса
 
-        setTitle("Fire Snake"); // Титул названия окна
-        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);    //когда нажмем красный крестик программа завершит работу,
-                                                                    // если не прописать? то программа зависала бы в памяти компа
-        setSize(320,345);  // размер поля окна в пикселях этот размер 320х320+25pix для заголовка окна "Fire Snake"
-        setLocation(400, 400); //координаты появления змейки относительно верхнего левого угла
-        add(new GameField()); // после создания класса GameField, добавляем экземпляр этого класса добавляем на свое основное окно
-        setVisible(true);    // окно появляется при запуске
+    public MainWindow(){
+        setTitle("Fire Snake");
+        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        setSize(420,445);
+        setLocation(400,400);
+        add(new GameField());
+        setVisible(true);
     }
 
-    //создадим точку входа в программу:
-    public static void main(String[] args) { // А теперь создадим экземпляр MainWindow, т.е. то откуда наша программа будет начинать свою работу:
-        MainWindow mainWindow = new MainWindow(); // создаем обьект mainWindow, по сути просто вызываем созданный ранее конструктор
+    public static void main(String[] args) {
+        MainWindow mainWindow = new MainWindow();
     }
 }
-
-/**
- *   после создания этот класс - class MainWindow остается неизменным и в нем сохраняются все настройки - размер окна,
- *   где окно появится и добавляется игровое поле GameField, которое добавляем последним, уже после всего!
- */
-
-
